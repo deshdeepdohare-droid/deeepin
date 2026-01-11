@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Internet Parlour | Digital Thrift & Vintage Archive by Alizar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,200..900;1,200..900&family=Space+Grotesk:wght@300..700&family=Syne:wght@400..800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --parlour-cream: #f4f1ea;
+            --parlour-black: #0f0f0f;
+            --parlour-accent: #8b4513;
+            --parlour-faded: #d9d4c7;
+            --parlour-clay: #b85c38;
+            --parlour-ink: #2d2926;
+        }
+
+        body {
+            background-color: var(--parlour-cream);
+            color: var(--parlour-black);
+            font-family: 'Crimson Pro', serif;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            cursor: crosshair;
+        }
+
+        h1, h2, h3, .heading-font {
+            font-family: 'Syne', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: -0.04em;
+        }
+
+        .serif-italic {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+        }
+
+        .mono {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        /* Vintage Grain Overlay */
+        .grain {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.07;
+            background: url('#');
+        }
+
+        /* Paper Texture Overlay */
+        .paper-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 9998;
+            opacity: 0.3;
+            background: url('');
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--parlour-cream); }
+        ::-webkit-scrollbar-thumb { background: var(--parlour-black); border-radius: 10px; }
+
+        /* CRT Scanline Effect */
+        .crt::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            z-index: 10;
+            background-size: 100% 4px, 4px 100%;
+            pointer-events: none;
+            animation: flicker 0.15s infinite;
+        }
+
+        @keyframes flicker {
+            0% { opacity: 0.9; } 50% { opacity: 1; } 100% { opacity: 0.9; }
+        }
+
+        /* Drawer/Modal Animations */
+        #cart-drawer, #product-modal {
+            transform: translateX(100%);
+            transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        #cart-drawer.open, #product-modal.open { transform: translateX(0); }
+
+        .vintage-border {
+            border: 1px solid var(--parlour-black);
+            padding: 6px;
+            box-shadow: 6px 6px 0px var(--parlour-accent);
+        }
+
+        .btn-vintage {
+            background: var(--parlour-black);
+            color: var(--parlour-cream);
+            padding: 16px 32px;
+            font-family: 'Space Grotesk', sans-serif;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 0.15em;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .btn-vintage:hover {
+            background: var(--parlour-clay);
+            transform: translate(-3px, -3px);
+            box-shadow: 6px 6px 0px var(--parlour-black);
+        }
+
+        .product-card img {
+            transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1), filter 0.5s ease;
+            filter: sepia(30%) grayscale(20%) contrast(90%);
+        }
+        .product-card:hover img {
+            transform: scale(1.08);
+            filter: sepia(0%) grayscale(0%) contrast(105%);
+        }
+
+        .marquee-container {
+            overflow: hidden;
+            white-space: nowrap;
+            background: var(--parlour-black);
+            color: var(--parlour-cream);
+            padding: 15px 0;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .marquee-content {
+            display: inline-block;
+            animation: marquee 50s linear infinite;
+        }
+
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        .quote-float {
+            font-size: 3rem;
+            line-height: 1.1;
+            letter-spacing: -0.05em;
+            color: var(--parlour-black);
+            opacity: 0.9;
+        }
+
+        @media (max-width: 768px) {
+            .quote-float { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="grain"></div>
+    <div class="paper-overlay"></div>
+
+    <!-- Top Navigation -->
+    <nav class="fixed top-0 w-full z-[80] bg-[#f4f1ea]/90 backdrop-blur-xl border-b border-black/10 px-6 py-6 flex justify-between items-center">
+        <div class="flex items-center gap-12">
+            <a href="#" class="text-3xl font-black heading-font tracking-tighter">INTERNET PARLOUR</a>
+            <div class="hidden lg:flex gap-10 uppercase text-[10px] mono font-bold tracking-[0.3em]">
+                <a href="#shop" class="hover:text-amber-800 transition-colors">Archive Shop</a>
+                <a href="#alizar" class="hover:text-amber-800 transition-colors">Curator</a>
+                <a href="#editorial" class="hover:text-amber-800 transition-colors">Journal</a>
+                <a href="#manifesto" class="hover:text-amber-800 transition-colors">Manifesto</a>
+            </div>
+        </div>
+        <div class="flex items-center gap-8">
+            <button id="cart-toggle" class="relative group flex items-center gap-3">
+                <span class="mono text-[10px] uppercase font-bold group-hover:underline">Archive Bag</span>
+                <span id="cart-count" class="bg-black text-white text-[9px] w-5 h-5 rounded-full flex items-center justify-center font-bold">0</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-24">
+        
+        <!-- Hero Section -->
+        <section class="px-6 mb-40">
+            <div class="relative h-[90vh] w-full overflow-hidden crt border border-black flex flex-col justify-end p-10 md:p-24">
+                <img src="https://images.unsplash.com/photo-1551232864-3f0890e580d9?auto=format&fit=crop&q=80&w=2000" alt="Vintage Aesthetic" class="absolute inset-0 w-full h-full object-cover grayscale brightness-[0.3] contrast-125">
+                <div class="relative z-20 max-w-6xl text-white">
+                    <span class="mono text-xs mb-8 block opacity-60 uppercase tracking-[0.5em]">Curated Online Archive by Alizar — Vol. IX</span>
+                    <h1 class="text-7xl md:text-[11rem] font-bold leading-[0.8] mb-12 tracking-tighter">PRESERVING<br>THE SOUL.</h1>
+                    <div class="flex flex-col md:flex-row gap-12 items-end">
+                        <p class="text-xl md:text-3xl max-w-2xl font-light italic opacity-80 leading-snug serif-italic">
+                            "Clothing is the only time machine we truly possess. We invite you to step into the past, curated for the modern digital era."
+                        </p>
+                        <a href="#shop" class="btn-vintage !bg-white !text-black hover:!bg-amber-100 mb-2">Explore The Vault</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Marquee 1 -->
+        <div class="marquee-container mb-40">
+            <div class="marquee-content mono text-[11px] uppercase font-bold">
+                <span>NEW DROPS EVERY SUNDAY 10AM EST • AUTHENTIC ARCHIVAL PIECES • WORLDWIDE SHIPPING • NO REPRODUCTIONS • THE PARLOUR BY ALIZAR • NEW DROPS EVERY SUNDAY 10AM EST • AUTHENTIC ARCHIVAL PIECES • WORLDWIDE SHIPPING • NO REPRODUCTIONS • THE PARLOUR BY ALIZAR •</span>
+            </div>
+        </div>
+
+        <!-- Aesthetic Quote Section -->
+        <section class="px-6 py-20 mb-40 border-y border-black/5">
+            <div class="max-w-7xl mx-auto flex flex-col md:flex-row gap-20 items-center">
+                <div class="md:w-1/2">
+                    <h2 class="quote-float serif-italic">"Beauty is found in the threads that survived."</h2>
+                </div>
+                <div class="md:w-1/2 mono text-xs uppercase opacity-40 tracking-widest leading-loose">
+                    Internet Parlour is not a store. It is a research project. We search through the dust of history to find silhouettes that speak to the present. Every item is hand-restored in our London studio.
+                </div>
+            </div>
+        </section>
+
+        <!-- Shop Section -->
+        <section id="shop" class="px-6 mb-60">
+            <div class="flex flex-col md:flex-row justify-between items-end mb-24 border-b border-black/20 pb-10">
+                <div>
+                    <h2 class="text-5xl md:text-8xl font-bold">THE ARCHIVE</h2>
+                    <p class="mono text-xs uppercase mt-4 opacity-50 tracking-[0.3em]">Filtered selection: Summer/Autumn 2024</p>
+                </div>
+                <div class="hidden md:flex gap-10 mono text-[10px] uppercase font-bold tracking-widest mb-2">
+                    <button class="border-b border-black">View All</button>
+                    <button class="opacity-30 hover:opacity-100 transition-opacity">Outerwear</button>
+                    <button class="opacity-30 hover:opacity-100 transition-opacity">Tops</button>
+                    <button class="opacity-30 hover:opacity-100 transition-opacity">Trousers</button>
+                    <button class="opacity-30 hover:opacity-100 transition-opacity">Accessories</button>
+                </div>
+            </div>
+
+            <div id="product-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-12 gap-y-32">
+                <!-- Products injected via JavaScript -->
+            </div>
+        </section>
+
+        <!-- The Process Section -->
+        <section class="px-6 py-40 mb-60 bg-black text-white crt overflow-hidden relative">
+            <div class="max-w-7xl mx-auto flex flex-col md:flex-row gap-20 items-center">
+                 <div class="md:w-1/2 relative">
+                    <div class="vintage-border !border-white !box-shadow-[8px_8px_0px_#8b4513] aspect-square overflow-hidden grayscale contrast-125">
+                        <img src="https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&q=80&w=1200" alt="Process" class="w-full h-full object-cover">
+                    </div>
+                    <div class="absolute -bottom-10 -right-10 bg-[#f4f1ea] text-black p-8 vintage-border max-w-xs hidden lg:block">
+                        <p class="mono text-[10px] uppercase font-bold tracking-widest mb-4">Phase 02: Restoration</p>
+                        <p class="serif-italic text-sm">Every garment is treated with distilled botanical oils and hand-steamed to restore fiber memory.</p>
+                    </div>
+                 </div>
+                 <div class="md:w-1/2">
+                    <span class="mono text-amber-500 uppercase text-xs tracking-[0.5em] mb-8 block">The Methodology</span>
+                    <h2 class="text-5xl md:text-8xl font-bold mb-12 leading-tight">THE ART OF<br>RECLAMATION.</h2>
+                    <div class="space-y-10 text-lg opacity-70 serif-italic leading-relaxed">
+                        <p>Our process begins in the field—scouring defunct textile mills and private estate sales across three continents.</p>
+                        <p>We look for structural integrity first. If the seams hold, the soul remains. Alizar personally inspects every buttonhole and hem before a piece enters the Parlour.</p>
+                    </div>
+                 </div>
+            </div>
+        </section>
+
+        <!-- Quote Interlude 2 -->
+        <section class="px-6 py-32 text-center bg-[#f0ede4] border-b border-black/5 mb-60">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-4xl md:text-6xl serif-italic mb-10 leading-tight">"We are not owners, merely temporary custodians of the threads that bind us."</h2>
+                <p class="mono text-xs uppercase opacity-40 tracking-[0.4em]">— Curator Alizar</p>
+            </div>
+        </section>
+
+        <!-- Curator Spotlight: Alizar -->
+        <section id="alizar" class="px-6 mb-60 relative overflow-hidden">
+            <div class="max-w-7xl mx-auto">
+                <div class="grid md:grid-cols-12 gap-16 items-center">
+                    <div class="md:col-span-5 order-2 md:order-1">
+                        <div class="vintage-border !box-shadow-[8px_8px_0px_#000] aspect-[4/5] overflow-hidden grayscale">
+                            <img src="IMG_20260111_114406_911.jpg" alt="Alizar" class="w-full h-full object-cover">
+                        </div>
+                    </div>
+                    <div class="md:col-span-7 order-1 md:order-2">
+                        <span class="mono text-amber-900 uppercase text-xs tracking-[0.5em] mb-8 block">The Curator</span>
+                        <h2 class="text-6xl md:text-9xl font-bold mb-10 leading-[0.85]">ALIZAR.</h2>
+                        <p class="text-2xl md:text-4xl serif-italic leading-relaxed mb-12 opacity-90 italic">
+                            "I believe every piece of clothing has a ghost inside it—a memory of who the previous owner was trying to be. My job is to find those ghosts and give them a new home."
+                        </p>
+                        <div class="flex flex-col gap-6 mono text-xs uppercase opacity-40 tracking-widest leading-loose">
+                            <p>Specialist in Japanese Avant-Garde & 90s European Minimalism.</p>
+                            <p>Former archive researcher in Paris & Kyoto.</p>
+                            <p>Contact: Alizar@InternetParlour.Digital</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quote Interlude 3 -->
+        <section class="px-6 py-32 bg-black text-white text-left mb-60">
+             <div class="max-w-6xl mx-auto border-l border-white/20 pl-12">
+                <h2 class="text-5xl md:text-7xl font-bold mb-8">EVERY CREASE IS A MAP OF A DAY WELL LIVED.</h2>
+                <p class="mono text-sm uppercase opacity-40 tracking-[0.3em]">The Internet is a Parlour, and these garments are our guests.</p>
+             </div>
+        </section>
+
+        <!-- Archive Manifesto -->
+        <section id="manifesto" class="px-6 py-40 bg-[#e7e4db] border-y border-black/10 mb-60 text-center">
+            <div class="max-w-3xl mx-auto">
+                <span class="mono text-[10px] uppercase opacity-40 tracking-[0.4em] block mb-12">The Philosophy</span>
+                <h2 class="text-4xl md:text-7xl font-bold mb-12 italic serif-italic leading-tight">"In a world of fast clones, be an original archive."</h2>
+                <div class="space-y-8 text-lg md:text-xl opacity-70 leading-relaxed">
+                    <p>Internet Parlour exists at the intersection of digital convenience and physical history. We reject the 'new' in favor of the 'lasting'.</p>
+                    <p>Our curation process takes months. We don't just buy clothes; we acquire legacies. Every button, every frayed edge, and every sun-bleached collar is a badge of authenticity.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Editorial Journal -->
+        <section id="editorial" class="px-6 mb-60">
+            <div class="text-center mb-32">
+                <h2 class="text-5xl md:text-7xl font-bold mb-6">THE JOURNAL</h2>
+                <p class="mono text-xs uppercase opacity-40 tracking-[0.5em]">Reflections on fabric and time</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-16">
+                <article class="group cursor-pointer">
+                    <div class="aspect-[16/9] overflow-hidden border border-black mb-8 grayscale group-hover:grayscale-0 transition-all duration-1000">
+                        <img src="Screenshot 2026-01-11 123251.png" alt="Journal 1" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[2s]">
+                    </div>
+                    <span class="mono text-[10px] uppercase opacity-40 block mb-4">Edition 01 — Materiality</span>
+                    <h3 class="text-3xl font-bold mb-4 group-hover:underline">Jeans
+Charcoal Fade</h3>
+                    <p class="opacity-60 text-sm leading-relaxed">Exploring why vintage materials possess a weight and texture that modern manufacturing has forgotten.</p>
+                </article>
+                <article class="group cursor-pointer">
+                    <div class="aspect-[16/9] overflow-hidden border border-black mb-8 grayscale group-hover:grayscale-0 transition-all duration-1000">
+                        <img src="Screenshot 2026-01-11 123501.png" alt="Journal 2" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[2s]">
+                    </div>
+                    <span class="mono text-[10px] uppercase opacity-40 block mb-4">Edition 02 — Geometry</span>
+                    <h3 class="text-3xl font-bold mb-4 group-hover:underline">1995 The Doors Jim Morrison Lizard King</h3>
+                    <p class="opacity-60 text-sm leading-relaxed">Deconstructing the structural shifts in tailoring during the mid-nineties minimalism era.</p>
+                </article>
+                <article class="group cursor-pointer">
+                    <div class="aspect-[16/9] overflow-hidden border border-black mb-8 grayscale group-hover:grayscale-0 transition-all duration-1000">
+                        <img src="Screenshot 2026-01-11 123709.png" alt="Journal 3" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[2s]">
+                    </div>
+                    <span class="mono text-[10px] uppercase opacity-40 block mb-4">Edition 03 — Memory</span>
+                    <h3 class="text-3xl font-bold mb-4 group-hover:underline">ome of their most successful Albums</h3>
+                    <p class="opacity-60 text-sm leading-relaxed">A travel diary from Alizar's sourcing trip through the hidden basements of Shimokitazawa.</p>
+                </article>
+            </div>
+        </section>
+
+        <!-- Newsletter Archival Sign-up -->
+        <section class="py-40 bg-black text-white px-6">
+            <div class="max-w-5xl mx-auto flex flex-col md:flex-row gap-20 items-center">
+                <div class="flex-1">
+                    <h2 class="text-5xl md:text-7xl font-bold mb-6">STAY CURATED.</h2>
+                    <p class="mono text-[10px] uppercase tracking-[0.5em] opacity-50">Early access to weekly drops & journal entries.</p>
+                </div>
+                <div class="flex-1 w-full">
+                    <form class="flex border-b border-white/30 pb-4">
+                        <input type="email" placeholder="YOUR@EMAIL.COM" class="bg-transparent flex-1 mono text-sm outline-none px-4">
+                        <button type="submit" class="mono text-[10px] uppercase font-bold hover:text-amber-500 transition-colors">Join Parlour</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-black text-white pt-40 pb-20 px-6 border-t border-white/5">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-24 mb-40">
+            <div class="md:col-span-2">
+                <h4 class="text-4xl font-bold heading-font mb-8">INTERNET PARLOUR</h4>
+                <p class="text-lg opacity-40 serif-italic max-w-sm mb-12">The digital living room for the world's most beautiful remnants.</p>
+                <div class="flex gap-8 mono text-[10px] uppercase font-bold tracking-widest opacity-60">
+                    <a href="#" class="hover:text-amber-500 underline underline-offset-4">Instagram</a>
+                    <a href="#" class="hover:text-amber-500 underline underline-offset-4">Pinterest</a>
+                    <a href="#" class="hover:text-amber-500 underline underline-offset-4">Twitter</a>
+                </div>
+            </div>
+            <div>
+                <h5 class="mono text-[10px] uppercase opacity-30 mb-8 font-bold">Archives</h5>
+                <ul class="space-y-4 mono text-[11px] uppercase tracking-wider">
+                    <li><a href="#" class="hover:text-amber-500">Shop All</a></li>
+                    <li><a href="#" class="hover:text-amber-500">Outerwear</a></li>
+                    <li><a href="#" class="hover:text-amber-500">Knitwear</a></li>
+                    <li><a href="#" class="hover:text-amber-500">The Vault (Limited)</a></li>
+                </ul>
+            </div>
+            <div>
+                <h5 class="mono text-[10px] uppercase opacity-30 mb-8 font-bold">Info</h5>
+                <ul class="space-y-4 mono text-[11px] uppercase tracking-wider">
+                    <li><a href="#" class="hover:text-amber-500">Shipping Policy</a></li>
+                    <li><a href="#" class="hover:text-amber-500">Returns Archival</a></li>
+                    <li><a href="#" class="hover:text-amber-500">Contact Alizar</a></li>
+                    <li><a href="#" class="hover:text-amber-500">Privacy</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="flex flex-col md:flex-row justify-between items-center opacity-20 text-[9px] mono uppercase tracking-[0.5em] border-t border-white/10 pt-10">
+            <p>&copy; 2024 INTERNET PARLOUR ARCHIVE. CURATED BY ALIZAR.</p>
+            <p>BUILT FOR THE ETERNAL DIGITAL NOMAD.</p>
+        </div>
+    </footer>
+
+    <!-- Cart Drawer -->
+    <div id="cart-drawer" class="fixed top-0 right-0 w-full md:w-[500px] h-full bg-[#f4f1ea] z-[100] border-l border-black shadow-2xl flex flex-col">
+        <div class="p-8 border-b border-black flex justify-between items-center bg-black text-white">
+            <h2 class="mono text-xs uppercase font-bold tracking-[0.3em]">Parlour Bag</h2>
+            <button id="cart-close" class="mono text-[10px] uppercase hover:underline">Close</button>
+        </div>
+        <div id="cart-items" class="flex-1 overflow-y-auto p-8 space-y-12">
+            <div id="empty-cart" class="h-full flex flex-col items-center justify-center opacity-30 text-center">
+                <p class="mono text-xs uppercase">The bag is currently empty.</p>
+                <a href="#shop" onclick="toggleCart()" class="underline mt-4 mono text-[10px] uppercase">Find some history</a>
+            </div>
+        </div>
+        <div class="p-8 border-t border-black bg-white">
+            <div class="flex justify-between items-center mb-8">
+                <span class="mono text-xs uppercase font-bold">Total Collection Value</span>
+                <span id="cart-subtotal" class="text-2xl font-black">$0.00</span>
+            </div>
+            <button class="w-full btn-vintage py-6 text-sm font-bold tracking-widest uppercase" onclick="alert('Checkout integration simulated. Thank you for visiting.')">Acquire Pieces</button>
+        </div>
+    </div>
+
+    <!-- Product Modal (Detailed Archival View) -->
+    <div id="product-modal" class="fixed top-0 right-0 w-full lg:w-[65%] h-full bg-[#f4f1ea] z-[110] border-l border-black shadow-2xl flex flex-col lg:flex-row overflow-hidden">
+        <div class="lg:w-1/2 h-1/2 lg:h-full overflow-y-auto p-4 lg:p-16 space-y-8 bg-white" id="modal-images">
+            <!-- Modal Images injected here -->
+        </div>
+        <div class="lg:w-1/2 h-1/2 lg:h-full p-10 lg:p-20 flex flex-col justify-between overflow-y-auto">
+            <div>
+                <button id="modal-close" class="mono text-[10px] uppercase underline mb-12 opacity-50 hover:opacity-100">Back to Archive</button>
+                <div id="modal-content">
+                    <!-- Detailed Info injected here -->
+                </div>
+            </div>
+            <div id="modal-footer" class="mt-20">
+                <!-- Action button injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- UI Interaction Script -->
+    <script>
+        const products = [
+            { 
+                id: 1, name: "1994 Archival Bomber", price: 285.00, tag: "Rare", 
+                img: "573799471_17986492883884281_1872502348110828146_n.jpg",
+                images: [
+                    "573799471_17986492883884281_1872502348110828146_n.jpg",
+                    "575475719_17986492847884281_6163281207909303743_n.jpg",
+                    "573801502_17986492829884281_604103630834352380_n.jpg"
+                ],
+                specs: { era: "Early 90s", material: "Flight Nylon", fit: "Oversized / Boxy", condition: "9/10 Vintage" },
+                desc: "A seminal piece of early tech-wear history. This bomber features heavy-duty YKK zippers and a reinforced nylon shell that has developed a unique patina over three decades."
+            },
+            { 
+                id: 2, name: "German biker kutte", price: 165.00, tag: "Essential", 
+                img: "581695141_17986928885884281_8585433312156039262_n.jpg",
+                images: [
+                    "581695141_17986928885884281_8585433312156039262_n.jpg",
+                    "580820395_17986928948884281_6289217606320386591_n.jpg",
+                    "580740418_17986928960884281_4263332150265630782_n.jpg"
+                ],
+                specs: { era: "Late 80s", material: "14oz Raw Denim", fit: "Straight / Wide", condition: "7/10 Distressed" },
+                desc: "Original workwear denim sourced from a defunct factory in Ohio. The distressing on the knees is genuine wear, telling the story of its previous life."
+            },
+            { 
+                id: 3, name: "1990s Chivas Regal Denim Chore Coat", price: 125.00, tag: "Curated", 
+                img: "SnapInsta.to_575282255_17986926314884281_3174573409978013141_n copy.jpg",
+                images: [
+                    "SnapInsta.to_575282255_17986926314884281_3174573409978013141_n copy.jpg",
+                    "SnapInsta.to_580999507_17986926302884281_4434031610959577080_n.jpg",
+                    "social-cat-instagram_instagram_1.jpg"
+                ],
+                specs: { era: "2002 Archive", material: "Boiled Shetland Wool", fit: "Regular / Dropped Shoulder", condition: "10/10 Deadstock" },
+                desc: "Unworn deadstock. The boiling process makes this wool naturally water-resistant and incredibly dense. A masterpiece of functional minimalism."
+            },
+            { 
+                id: 4, name: "SOLD-SAINT MICHEAL SAINT Jesus Tee", price: 85.00, tag: "Rare", 
+                img: "SnapInsta.to_565499661_17984849258884281_4221020812752885724_n.jpg",
+                images: [
+                    "SnapInsta.to_565499661_17984849258884281_4221020812752885724_n.jpg",
+                    "SnapInsta.to_566426761_17984849279884281_3469528162152812750_n.jpg",
+                    "SnapInsta.to_566850186_17984849213884281_2262258719902586077_n.jpg"
+                ],
+                specs: { era: "1972 Surplus", material: "Quilted Ripstop", fit: "Layering Piece", condition: "8/10 Good" },
+                desc: "Authentic army surplus liner. Re-conditioned by Alizar with hand-sewn button loops. Perfect for adding a historical layer to modern outfits."
+            },
+            { 
+                id: 5, name: "2001 AC/DC “Highway to Hell” Band Tee", price: 55.00, tag: "Antique", 
+                img: "SnapInsta.to_541309988_17979179450884281_155416705377177520_n.jpg",
+                images: [
+                    "SnapInsta.to_541309988_17979179450884281_155416705377177520_n.jpg",
+                    "SnapInsta.to_541269911_17979179579884281_7308737284889656321_n.jpg"
+                    
+                ],
+                specs: { era: "Late 70s", material: "Italian Silk", fit: "One Size", condition: "9.5/10 Mint" },
+                desc: "A hand-rolled silk scarf with a subtle Victorian-era inspired monogram. Sourced from a private collection in Florence."
+            },
+            { 
+                id: 6, name: "2000s Led Zeppelin “U.S. Tour 1977” Band Tees", price: 340.00, tag: "Grail", 
+                img: "SnapInsta.to_607403969_17991439178884281_7587377272163774647_n.jpg",
+                images: [
+                    "SnapInsta.to_605851947_17991439199884281_8091647538024734476_n.jpg",
+                    "SnapInsta.to_606643167_17991439217884281_1052520061935667293_n.jpg"
+                ],
+                specs: { era: "1998 Collection", material: "Gore-Tex Pro", fit: "Structural / Slim", condition: "9/10 Archive" },
+                desc: "An early example of technical minimalism. This shell maintains its waterproof integrity despite its age."
+            },
+            { 
+                id: 7, name: "SOLD-Carhartt Zip-Up Hoodie", price: 195.00, tag: "Rare", 
+                img: "SnapInsta.to_604011463_17991012110884281_2866076103768836318_n.jpg",
+                images: [
+                    "SnapInsta.to_587786248_17991012191884281_891774383552246560_n.jpg",
+                    "SnapInsta.to_604072276_17991012209884281_8068124792431866594_n.jpg"
+                ],
+                specs: { era: "Mid 80s", material: "70% Mohair Blend", fit: "Relaxed", condition: "9/10 Excellent" },
+                desc: "Incredibly soft hand-knit mohair with a deep textured pile. A classic silhouette from the early Tokyo street style movement."
+            },
+            { 
+                id: 8, name: "2000s Rings of Saturn “Lugal Ki En” Full-Zip Hoodie", price: 210.00, tag: "Essential", 
+                img: "SnapInsta.to_587799915_17988959732884281_6137083451886596756_n.jpg",
+                images: [
+                    "SnapInsta.to_587802186_17988959771884281_5672188395797644007_n.jpg",
+                    "SnapInsta.to_591152576_17988959786884281_3029425598009404394_n.jpg"
+                ],
+                specs: { era: "Early 70s", material: "Duck Canvas", fit: "Boxy / Utility", condition: "6.5/10 Well-Worn" },
+                desc: "The definition of patina. This canvas has been through decades of rain and sun, resulting in a color depth impossible to replicate in new manufacturing."
+            },
+            { 
+                id: 9, name: " “Gas or Ass, No Free Rides” Tee", price: 155.00, tag: "Minimal", 
+                img: "587183614_17988648581884281_3334074613749061253_n.jpg",
+                images: [
+                    "SnapInsta.to_588574111_17988648650884281_2622340875073404975_n.jpg",
+                    "SnapInsta.to_588959154_17988648611884281_4566485578355427987_n.jpg"
+                ],
+                specs: { era: "1992 European", material: "Tropical Wool", fit: "High Waisted / Tapered", condition: "10/10 Mint" },
+                desc: "Sharply pleated slacks in a light tropical wool. Perfect drape and weight for transitional seasons."
+            },
+            { 
+                id: 10, name: " Fringed Leather Biker Jacket", price: 110.00, tag: "Classic", 
+                img: "SnapInsta.to_575090800_17986928246884281_1906241457682625044_n.jpg",
+                images: [
+                    "SnapInsta.to_579896721_17986928405884281_244203072944998000_n.jpg",
+                    "SnapInsta.to_575697806_17986928426884281_8935163782574692452_n.jpg"
+                ],
+                specs: { era: "80s Nordic", material: "Virgin Wool", fit: "Body-Hugging", condition: "9/10 Vintage" },
+                desc: "A dense, sculptural knit that holds its shape. Sourced from a small craft co-op in Norway."
+            },
+            { 
+                id: 11, name: "1994 Pink Floyd “Sundial” Tee", price: 135.00, tag: "Rare", 
+                img: "SnapInsta.to_527347654_17975868596884281_5812217981124436189_n.jpg",
+                images: [
+                    "SnapInsta.to_526856841_17975868560884281_7359151328225100300_n.jpg",
+                    "SnapInsta.to_525335658_17975868551884281_6561961688116025379_n.jpg"
+                ],
+                specs: { era: "2000 Archive", material: "Silk Organza", fit: "Loose", condition: "10/10 Mint" },
+                desc: "A sheer, structural shirt that moves like liquid. An exploration of transparency from the early Y2K high-fashion archive."
+            },
+            { 
+                id: 12, name: "Skeleton Star Quote Hoodie", price: 295.00, tag: "1-of-1", 
+                img: "SnapInsta.to_457599781_374679972403535_8804916403252186298_n.jpg",
+                images: [
+                    "SnapInsta.to_457598399_1059366918958422_395181534516877874_n.jpg",
+                    "SnapInsta.to_458165409_358517153995190_4674483265646684859_n.jpg"
+                ],
+                specs: { era: "1960s Workwear", material: "Heavy Twill", fit: "Boxy", condition: "8/10 Personalized" },
+                desc: "A unique find with hand-painted markings on the back pocket. Authentic 60s French workwear, reclaimed and stabilized."
+            },
+            
+        ];
+
+        let cart = [];
+
+        // UI Initialization
+        function initProducts() {
+            const grid = document.getElementById('product-grid');
+            grid.innerHTML = products.map(p => `
+                <div class="product-card group cursor-pointer" onclick="handleProductClick(${p.id})">
+                    <div class="relative overflow-hidden vintage-border mb-8 aspect-[3/4] bg-gray-100">
+                        <img src="${p.img}" alt="${p.name}" class="w-full h-full object-cover">
+                        <div class="absolute top-4 left-4">
+                             <span class="bg-white text-black text-[9px] font-bold px-3 py-1 uppercase border border-black">${p.tag}</span>
+                        </div>
+                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-4">
+                             <span class="text-white mono text-xs uppercase border border-white px-4 py-2 mb-2">Add to Archive +</span>
+                             <span class="text-white/70 mono text-[9px] uppercase tracking-widest text-center">Click to view angles</span>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-start px-2">
+                        <div>
+                            <h3 class="font-bold text-2xl mb-1 tracking-tighter uppercase">${p.name}</h3>
+                            <p class="mono text-[9px] uppercase opacity-40 tracking-[0.3em]">Curated Archive</p>
+                        </div>
+                        <p class="mono text-sm font-black">$${p.price.toFixed(2)}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Handle Product Click: Add to Cart and Open Detail View
+        function handleProductClick(id) {
+            addToCart(id, false); // Add to cart but don't force open the cart drawer automatically
+            openModal(id); // Open modal to show angles and specs
+        }
+
+        // Modal Logic
+        function openModal(id) {
+            const p = products.find(prod => prod.id === id);
+            const modal = document.getElementById('product-modal');
+            const imagesContainer = document.getElementById('modal-images');
+            const contentContainer = document.getElementById('modal-content');
+            const footerContainer = document.getElementById('modal-footer');
+
+            // Insert images with distinct angles
+            imagesContainer.innerHTML = p.images.map((img, index) => `
+                <div class="relative mb-8">
+                    <img src="${img}" class="w-full h-auto vintage-border grayscale hover:grayscale-0 transition-all duration-1000">
+                    <span class="absolute bottom-4 right-4 bg-black text-white mono text-[9px] px-2 py-1 uppercase opacity-50">Angle 0${index + 1}</span>
+                </div>
+            `).join('');
+
+            contentContainer.innerHTML = `
+                <span class="mono text-[10px] uppercase opacity-40 tracking-[0.4em] block mb-6">${p.tag} — Archive Ref: #${1000 + p.id}</span>
+                <h2 class="text-6xl font-bold mb-8 heading-font leading-tight">${p.name}</h2>
+                <div class="space-y-12">
+                    <div class="grid grid-cols-2 gap-x-8 gap-y-10 border-y border-black/10 py-10">
+                        <div>
+                            <span class="mono text-[9px] uppercase opacity-40 block mb-2 font-bold tracking-widest">Era</span>
+                            <span class="text-lg serif-italic">${p.specs.era}</span>
+                        </div>
+                        <div>
+                            <span class="mono text-[9px] uppercase opacity-40 block mb-2 font-bold tracking-widest">Material</span>
+                            <span class="text-lg serif-italic">${p.specs.material}</span>
+                        </div>
+                        <div>
+                            <span class="mono text-[9px] uppercase opacity-40 block mb-2 font-bold tracking-widest">Fit</span>
+                            <span class="text-lg serif-italic">${p.specs.fit}</span>
+                        </div>
+                        <div>
+                            <span class="mono text-[9px] uppercase opacity-40 block mb-2 font-bold tracking-widest">Condition</span>
+                            <span class="text-lg serif-italic">${p.specs.condition}</span>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="mono text-[9px] uppercase opacity-40 block mb-4 font-bold tracking-widest">The Curator's Story</span>
+                        <p class="text-xl leading-relaxed serif-italic opacity-80">${p.desc}</p>
+                    </div>
+                </div>
+            `;
+
+            footerContainer.innerHTML = `
+                <div class="bg-black text-white p-6 text-center mono text-xs uppercase tracking-widest mb-4 opacity-50">
+                    Item has been added to your collection bag
+                </div>
+                <button onclick="closeModal(); toggleCart();" class="w-full btn-vintage text-base font-bold">View Archive Bag — $${p.price.toFixed(2)}</button>
+            `;
+
+            modal.classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('product-modal').classList.remove('open');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Cart Logic
+        function toggleCart() {
+            document.getElementById('cart-drawer').classList.toggle('open');
+        }
+
+        function addToCart(id, showDrawer = true) {
+            const product = products.find(p => p.id === id);
+            const exists = cart.find(item => item.id === id);
+            
+            if (exists) {
+                exists.quantity += 1;
+            } else {
+                cart.push({ ...product, quantity: 1 });
+            }
+            
+            updateCartUI();
+            if(showDrawer && !document.getElementById('cart-drawer').classList.contains('open')) {
+                toggleCart();
+            }
+        }
+
+        function removeFromCart(id) {
+            cart = cart.filter(item => item.id !== id);
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const itemsContainer = document.getElementById('cart-items');
+            const cartCount = document.getElementById('cart-count');
+            const subtotalEl = document.getElementById('cart-subtotal');
+            const emptyMsg = document.getElementById('empty-cart');
+
+            const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
+            const subtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+
+            cartCount.innerText = totalItems;
+            subtotalEl.innerText = `$${subtotal.toFixed(2)}`;
+
+            if (cart.length === 0) {
+                itemsContainer.innerHTML = '';
+                itemsContainer.appendChild(emptyMsg);
+            } else {
+                itemsContainer.innerHTML = cart.map(item => `
+                    <div class="flex gap-8 border-b border-black/5 pb-10">
+                        <div class="w-28 h-36 vintage-border overflow-hidden flex-shrink-0 grayscale bg-gray-100">
+                            <img src="${item.img}" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex-1 flex flex-col justify-between">
+                            <div>
+                                <h4 class="font-bold text-xl uppercase tracking-tighter">${item.name}</h4>
+                                <p class="mono text-[10px] opacity-40 mt-1 uppercase tracking-widest">Qty: ${item.quantity}</p>
+                            </div>
+                            <div class="flex justify-between items-end">
+                                <span class="mono text-sm font-black">$${(item.price * item.quantity).toFixed(2)}</span>
+                                <button onclick="removeFromCart(${item.id})" class="mono text-[9px] uppercase underline opacity-30 hover:opacity-100 transition-opacity">De-archive</button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Global Listeners
+        document.getElementById('cart-toggle').addEventListener('click', toggleCart);
+        document.getElementById('cart-close').addEventListener('click', toggleCart);
+        document.getElementById('modal-close').addEventListener('click', closeModal);
+
+        // Scroll Reveal Animations
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('opacity-100', 'translate-y-0');
+                    entry.target.classList.remove('opacity-0', 'translate-y-12');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        window.onload = () => {
+            initProducts();
+            document.querySelectorAll('section, article').forEach(el => {
+                el.classList.add('transition-all', 'duration-[1.2s]', 'opacity-0', 'translate-y-12');
+                revealObserver.observe(el);
+            });
+        };
+    </script>
+</body>
+</html>
